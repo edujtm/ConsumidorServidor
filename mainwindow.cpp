@@ -68,21 +68,35 @@ void MainWindow::tcpDisconnect() {
     }
 }
 
+//      Este método pega os dados do servidor e manda para a plotter.
+
 void MainWindow::getData(){
+
   QString str, strConnect;
   QByteArray array;
   QStringList list;
   QDateTime datetime;
+
   qDebug() << "to get data...";
   if(socket->state() == QAbstractSocket::ConnectedState){
     if(!selectedIP.isEmpty()) {
         if(socket->isOpen()){
 
+            //Espaço entre os dados desenhados na plotter
+            //int dx = ui->plotterData->width()/10;
+            //int dy;
 
-            ui->plotterData->clearPoints();
-            //Pontos que serão utilizados no desenhos das linhas com base nos dados
-            QPoint pf;
-            int i = 10;        //Variavel que determinará o eixo x
+            //float scalefactor = ui->plotterData->height()/100;          //  Valor que redimensiona os valores
+                                                                        //  Para que o valor 100 fique no topo
+                                                                        //  e 0 embaixo na plotter.
+
+            //limpa os pontos da lista de pontos que foram desenhados na Plotter
+            ui->plotterData->clearValues();
+
+            //Ponto que será utilizados no desenhos das linhas com base nos valores retornados no get
+            //QPoint pf;
+            //int i = dx;               //Variavel que determinará o eixo x
+
 
             //Escrevendo no metodo get no servidor e esperando resposta.
             qDebug() << "reading...";
@@ -91,8 +105,11 @@ void MainWindow::getData(){
             socket->waitForBytesWritten();
             socket->waitForReadyRead();
             qDebug() << socket->bytesAvailable();
-            pf = QPoint(0, ui->plotterData->height());
-            ui->plotterData->addPoint(pf);
+
+            //se o servidor responder, cria-se o primeiro ponto que irá ficar na posição (0, 0)
+            //dy = ui->plotterData->height();
+            //pf = QPoint(0, dy);
+            ui->plotterData->addValue(0);
 
             while(socket->bytesAvailable()){
 
@@ -104,9 +121,10 @@ void MainWindow::getData(){
                     qDebug() << datetime << ": " << str;
                 }
 
-                pf  = QPoint(i, ui->plotterData->height() - std::stoi(str.toStdString().c_str()));
-                ui->plotterData->addPoint(pf);
-                i += 10;
+                //dy = (int) (ui->plotterData->height() - std::stoi(str.toStdString().c_str()) * scalefactor);
+                //pf  = QPoint(i, dy);
+                ui->plotterData->addValue(std::stoi(str.toStdString().c_str()));
+                //i += dx;
             }
             ui->plotterData->startTimer();
         }
@@ -130,8 +148,10 @@ void MainWindow::on_horizontalSliderTiming_valueChanged(int value)
 
 void MainWindow::on_pushButtonUpdate_clicked()
 {
-    selectedIP = ui->listWidgetIP->currentItem()->text();
-    ui->plotterData->clearScreen();
+     if(ui->listWidgetIP->currentRow() != -1){
+        selectedIP = ui->listWidgetIP->currentItem()->text();
+        ui->plotterData->clearScreen();
+     }
 }
 
 
