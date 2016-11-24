@@ -2,16 +2,8 @@
 
 PlotterData::PlotterData(QWidget *parent) : QWidget(parent)
 {
-    started = false;
 
     this->setBackgroundRole(QPalette::Base);
-
-    timer = new QTimer(this);
-
-    connect(timer,
-            SIGNAL(timeout()),
-            this,
-            SLOT(repaint()));
 
 }
 
@@ -21,7 +13,7 @@ void PlotterData::addValue(int value) {
     } else {
         values.pop_front();
         for(int i = 1; i<values.size(); i++){
-            values.swap(i-1, i);
+            values.replace(i-1, values.at(i));
         }
         values.append(value);
     }
@@ -31,14 +23,15 @@ void PlotterData::clearValues() {
     values.clear();
 }
 
-void PlotterData::clearScreen() {
-
-}
-
 void PlotterData::paintEvent(QPaintEvent *e) {
     QPainter painter(this);
-    QPen pointpen, linepen;
+    QPen pointpen, linepen, borderpen;
     QPoint p1, p2;
+
+    borderpen.setColor(Qt::gray);
+    painter.setPen(borderpen);
+    painter.drawRect(0,0,this->width()-1, this->height()-1);
+
     float scalefactor = this->height()/100;
     if(values.size() > 2) {
         pointpen.setColor(Qt::black);
@@ -63,22 +56,4 @@ void PlotterData::paintEvent(QPaintEvent *e) {
             p1 = p2;
         }
     }
-}
-
-void PlotterData::startTimer() {
-    if(!isStarted()) {
-        timer->start(1000);
-        started = true;
-    }
-}
-
-void PlotterData::stopTimer() {
-    if(isStarted()){
-        timer->stop();
-        started = false;
-    }
-}
-
-bool PlotterData::isStarted() {
-    return started;
 }
