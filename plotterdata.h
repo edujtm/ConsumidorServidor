@@ -12,14 +12,14 @@ class PlotterData : public QWidget
 {
     Q_OBJECT
 private:
-    QList<QPoint> points;
+    QList<int> values;
     QTimer *timer;
     bool started;
 
 public:
     PlotterData(QWidget *parent);
-    void addPoint(QPoint point);
-    void clearPoints();
+    void addValue(int value);
+    void clearValues();
     void clearScreen();
     bool isStarted();
     void startTimer();
