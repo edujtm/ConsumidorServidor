@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
+  bool isStarted();
 
 public slots:
   void getData();
@@ -30,11 +31,15 @@ private slots:
 
   void on_pushButtonUpdate_clicked();
 
-  void on_pushButtonStop_clicked();
+  void startTimer();
+  void stopTimer();
 
 private:
+
+  int aux;
   bool started;
   QPoint pf;
+  QTimer *timer;
   Ui::MainWindow *ui;
   QTcpSocket *socket;
   QString selectedIP;
