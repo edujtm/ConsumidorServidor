@@ -13,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
   aux = 0;
   tcpConnect();
 
+  //Desabilita os botões de Start e Stop
+  ui->pushButtonStart->setEnabled(false);
+  ui->pushButtonStop->setEnabled(false);
+
   //Conecta o botão de conectar ao slot tcpConnect que irá fazer a conexão com o servidor
   connect(ui->pushButtonConnect,
           SIGNAL(clicked(bool)),
@@ -83,6 +87,12 @@ void MainWindow::tcpDisconnect() {
         //Disconeta do servidor e imprime uma resposta no debug caso tenha sucesso ou não
         socket->disconnectFromHost();
         if(socket->state() == QAbstractSocket::UnconnectedState) {
+            ui->pushButtonStart->setEnabled(false);
+            ui->pushButtonStop->setEnabled(false);
+            if(isStarted()){
+                timer->stop();
+                started = false;
+            }
             qDebug() << "Disconnected";
         } else {
             qDebug() << "Connected";
@@ -101,7 +111,6 @@ void MainWindow::getData(){
 
   qDebug() << "to get data...";
   if(socket->state() == QAbstractSocket::ConnectedState){
-    if(!selectedIP.isEmpty()) {
         if(socket->isOpen()){
 
 
@@ -135,20 +144,17 @@ void MainWindow::getData(){
             //Chama o metodo repaint da plotter que irá atualizar o desenho de acordo com os valores passados
             ui->plotterData->repaint();
         }
-    } else {
-        qDebug() << "Select IP and update first.";
-    }
   }
 }
 
-
+//Destrutor da MainWindow
 MainWindow::~MainWindow()
 {
   delete socket;
   delete ui;
-  delete timer;
 }
 
+//Slot que altera o tempo entre os gets no servidor
 void MainWindow::on_horizontalSliderTiming_valueChanged(int value)
 {
     ui->labelTiming->setNum((double)value/10);
@@ -156,21 +162,28 @@ void MainWindow::on_horizontalSliderTiming_valueChanged(int value)
         timer->setInterval(value*100);
     }
 }
-
+//Slot que é ativado quando o botão update é clicado
 void MainWindow::on_pushButtonUpdate_clicked()
 {
+    //Se o usuário tiver escolhido um IP, atualiza a variável que guarda o ip selecionado
      if(ui->listWidgetIP->currentRow() != -1){
         selectedIP = ui->listWidgetIP->currentItem()->text();
+        //Habilita os botões de start e stop, já que um IP foi selecionado
+        ui->pushButtonStart->setEnabled(true);
+        ui->pushButtonStop->setEnabled(true);
+        qDebug() << "updated";
      }
 }
-
+//Slot que é ativado quando o botão Start é clicado.
 void MainWindow::startTimer(){
+    //Inicia o timer que irá chamar o método getData.
     if(socket->state() == QAbstractSocket::ConnectedState && !isStarted()) {
         timer->start(1000);
         started = true;
     }
 }
 
+//Slot que é ativado quando o botão Stop é clicado.
 void MainWindow::stopTimer() {
     if(isStarted()){
         timer->stop();
@@ -178,10 +191,12 @@ void MainWindow::stopTimer() {
     }
 }
 
+//Retorna se o timer está iniciado ou não.
 bool MainWindow::isStarted() {
     return started;
 }
 
+//Função que converte um numero em string para inteiro
 int MainWindow::stoi(std::string numero, int tam)
 {
     int valor = 0;
