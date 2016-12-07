@@ -7,6 +7,7 @@
 #include <QtGui>
 #include <QtCore>
 #include <plotterdata.h>
+#include <string>
 
 namespace Ui {
 class MainWindow;
@@ -35,7 +36,7 @@ private slots:
   void stopTimer();
 
 private:
-
+  int stoi(std::string num, int tam);
   int aux;
   bool started;
   QPoint pf;
